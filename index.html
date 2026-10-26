@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#090909">
+  <meta name="description" content="Local attendance analysis for fingerprint device exports">
+  <title>Hazem Moussa | Attendance Hub</title>
+  <link rel="icon" href="assets/logo.png" type="image/png">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <img src="assets/logo.png" alt="Hazem Moussa HR & Payroll Hub" class="brand-logo">
+        <div>
+          <p class="eyebrow">HR & PAYROLL HUB</p>
+          <h1 data-i18n="appTitle">نظام الحضور والانصراف</h1>
+        </div>
+      </div>
+
+      <nav class="nav-list" aria-label="Main navigation">
+        <button class="nav-item active" data-view="setup">
+          <span class="nav-icon">01</span><span data-i18n="navSetup">الإعداد والاستيراد</span>
+        </button>
+        <button class="nav-item" data-view="dashboard" disabled>
+          <span class="nav-icon">02</span><span data-i18n="navDashboard">لوحة النتائج</span>
+        </button>
+        <button class="nav-item" data-view="daily" disabled>
+          <span class="nav-icon">03</span><span data-i18n="navDaily">التقرير اليومي</span>
+        </button>
+        <button class="nav-item" data-view="summary" disabled>
+          <span class="nav-icon">04</span><span data-i18n="navSummary">ملخص الموظفين</span>
+        </button>
+      </nav>
+
+      <div class="privacy-note">
+        <span class="privacy-dot"></span>
+        <div>
+          <strong data-i18n="localOnly">يعمل محليًا</strong>
+          <p data-i18n="privacyText">لا يتم رفع بيانات الموظفين إلى أي خادم.</p>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <header class="topbar">
+        <div>
+          <p class="breadcrumb" data-i18n="productName">Attendance Intelligence</p>
+          <h2 id="page-title" data-i18n="setupTitle">إعداد التقرير</h2>
+        </div>
+        <div class="top-actions">
+          <button id="lang-toggle" class="ghost-button" type="button">English</button>
+          <button id="export-button" class="gold-button hidden" type="button" data-i18n="exportExcel">تصدير Excel</button>
+        </div>
+      </header>
+
+      <section id="view-setup" class="view active-view">
+        <div class="hero-card">
+          <div class="hero-copy">
+            <span class="section-kicker" data-i18n="localWorkspace">مساحة عمل محلية وآمنة</span>
+            <h3 data-i18n="heroTitle">حوّل ملف جهاز البصمة إلى تقرير حضور واضح خلال دقائق.</h3>
+            <p data-i18n="heroText">ارفع ملف الحركات وقالب الموظفين، راجع الإعدادات، ثم أنشئ التقرير. جميع المعالجة تتم داخل المتصفح.</p>
+          </div>
+          <div class="hero-mark">HM</div>
+        </div>
+
+        <div class="setup-grid">
+          <article class="panel upload-panel">
+            <div class="panel-heading">
+              <span class="step-number">1</span>
+              <div>
+                <h3 data-i18n="punchFileTitle">ملف جهاز البصمة</h3>
+                <p data-i18n="punchFileHelp">يدعم XLS وXLSX وCSV ويكتشف الأعمدة العربية أو الإنجليزية.</p>
+              </div>
+            </div>
+            <label class="drop-zone" for="punch-file">
+              <input id="punch-file" type="file" accept=".xls,.xlsx,.csv" hidden>
+              <span class="upload-symbol">↑</span>
+              <strong data-i18n="choosePunchFile">اختر ملف الحركات</strong>
+              <small data-i18n="orDrop">أو اسحبه إلى هنا</small>
+            </label>
+            <div id="punch-status" class="file-status" data-state="empty" data-i18n="noFile">لم يتم اختيار ملف</div>
+          </article>
+
+          <article class="panel upload-panel">
+            <div class="panel-heading">
+              <span class="step-number">2</span>
+              <div>
+                <h3 data-i18n="employeesFileTitle">قالب الموظفين والمؤثرات</h3>
+                <p data-i18n="employeesFileHelp">قالب واحد للموظفين والإجازات والأذونات والإجازات الرسمية.</p>
+              </div>
+            </div>
+            <div class="split-actions">
+              <button id="download-template" class="outline-button" type="button" data-i18n="downloadTemplate">تنزيل القالب</button>
+              <label class="compact-upload" for="employees-file">
+                <input id="employees-file" type="file" accept=".xls,.xlsx,.csv" hidden>
+                <span data-i18n="uploadEmployees">رفع القالب المكتمل</span>
+              </label>
+            </div>
+            <div id="employees-status" class="file-status" data-state="empty" data-i18n="noFile">لم يتم اختيار ملف</div>
+          </article>
+        </div>
+
+        <article class="panel settings-panel">
+          <div class="panel-heading">
+            <span class="step-number">3</span>
+            <div>
+              <h3 data-i18n="settingsTitle">إعدادات الحساب</h3>
+              <p data-i18n="settingsHelp">يمكن تعديل هذه القيم في كل مرة قبل إنشاء التقرير.</p>
+            </div>
+          </div>
+          <div class="form-grid">
+            <label><span data-i18n="periodStart">بداية الفترة</span><input id="period-start" class="date-entry" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" autocomplete="off" aria-label="Period start: day/month/year"></label>
+            <label><span data-i18n="periodEnd">نهاية الفترة</span><input id="period-end" class="date-entry" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" autocomplete="off" aria-label="Period end: day/month/year"></label>
+            <label><span data-i18n="lateGrace">سماح التأخير (دقيقة)</span><input id="late-grace" type="number" min="0" value="15"></label>
+            <label><span data-i18n="earlyGrace">سماح الانصراف المبكر (دقيقة)</span><input id="early-grace" type="number" min="0" value="15"></label>
+            <label><span data-i18n="overtimeAfter">بدء الإضافي بعد نهاية الوردية (دقيقة)</span><input id="overtime-after" type="number" min="0" value="30"></label>
+            <label><span data-i18n="weekendOvertime">عمل يوم الراحة</span>
+              <select id="rest-overtime">
+                <option value="all" data-i18n="allHoursOvertime">كل الوقت إضافي</option>
+                <option value="after" data-i18n="afterShiftOnly">بعد نهاية الوردية فقط</option>
+              </select>
+            </label>
+          </div>
+          <div class="validation-row">
+            <div id="validation-message" class="validation-message" data-i18n="readyHint">ارفع الملفين لإتاحة إنشاء التقرير.</div>
+            <button id="generate-report" class="primary-button" type="button" disabled data-i18n="generateReport">إنشاء التقرير</button>
+          </div>
+        </article>
+      </section>
+
+      <section id="view-dashboard" class="view">
+        <div id="kpi-grid" class="kpi-grid"></div>
+        <div class="dashboard-grid">
+          <article class="panel chart-panel">
+            <div class="panel-title-row">
+              <div><span class="section-kicker" data-i18n="analysis">تحليل</span><h3 data-i18n="topLate">أعلى الموظفين تأخيرًا</h3></div>
+            </div>
+            <div id="late-chart" class="bar-chart"></div>
+          </article>
+          <article class="panel insight-panel">
+            <div class="panel-title-row">
+              <div><span class="section-kicker" data-i18n="dataQuality">جودة البيانات</span><h3 data-i18n="attentionRequired">حالات تحتاج مراجعة</h3></div>
+            </div>
+            <div id="quality-list" class="quality-list"></div>
+          </article>
+        </div>
+      </section>
+
+      <section id="view-daily" class="view">
+        <article class="panel report-panel">
+          <div class="report-toolbar">
+            <div>
+              <span class="section-kicker" data-i18n="details">التفاصيل</span>
+              <h3 data-i18n="dailyAttendance">الحضور اليومي</h3>
+            </div>
+            <div class="filter-group">
+              <input id="daily-search" type="search" data-i18n-placeholder="searchEmployee" placeholder="بحث بالكود أو الاسم">
+              <select id="daily-status-filter">
+                <option value="all" data-i18n="allStatuses">كل الحالات</option>
+                <option value="absence" data-i18n="absence">غياب</option>
+                <option value="missing" data-i18n="missingPunch">بصمة ناقصة</option>
+                <option value="late" data-i18n="late">تأخير</option>
+                <option value="overtime" data-i18n="overtime">إضافي</option>
+              </select>
+            </div>
+          </div>
+          <p class="edit-hint" data-i18n="editHint">يمكن تعديل وقت الدخول والخروج والملاحظات مباشرة من الجدول، وسيُعاد حساب الملخص تلقائيًا.</p>
+          <div class="report-legend" aria-label="Report legend">
+            <span><i class="legend-dot regular"></i><b data-i18n="regularOvertime">إضافي بعد العمل</b></span>
+            <span><i class="legend-dot rest"></i><b data-i18n="restOvertime">إضافي الراحة الأسبوعية</b></span>
+            <span><i class="legend-dot holiday"></i><b data-i18n="holidayOvertime">إضافي الإجازة الرسمية</b></span>
+            <span><i class="legend-dot leave"></i><b data-i18n="leave">إجازة</b></span>
+            <span><i class="legend-dot permission"></i><b data-i18n="permission">إذن</b></span>
+          </div>
+          <div class="table-wrap"><table id="daily-table"></table></div>
+          <div class="pagination">
+            <button id="prev-page" class="ghost-button" type="button" data-i18n="previous">السابق</button>
+            <span id="page-info"></span>
+            <button id="next-page" class="ghost-button" type="button" data-i18n="next">التالي</button>
+          </div>
+        </article>
+      </section>
+
+      <section id="view-summary" class="view">
+        <article class="panel report-panel">
+          <div class="report-toolbar">
+            <div>
+              <span class="section-kicker" data-i18n="monthlyView">نظرة مجمعة</span>
+              <h3 data-i18n="employeesSummary">ملخص الموظفين</h3>
+            </div>
+            <input id="summary-search" type="search" data-i18n-placeholder="searchEmployee" placeholder="بحث بالكود أو الاسم">
+          </div>
+          <div class="table-wrap"><table id="summary-table"></table></div>
+        </article>
+      </section>
+    </main>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="vendor/xlsx.full.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
