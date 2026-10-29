@@ -104,7 +104,7 @@
   };
 
   const HEADER_ALIASES = {
-    punchCode: ["رقمالبصمه", "رقمالبصمة", "كودالموظف", "الكود", "employeecode", "employeeid", "code", "punchid"],
+    punchCode: ["رقمالبصمه", "رقمالبصمة", "كودالموظف", "الكود", "employeecode", "employeeid", "employeeno", "employeenumber", "code", "punchid", "no", "number"],
     punchName: ["الاسم", "الإسم", "اسمالموظف", "employeename", "name"],
     punchDept: ["الاداره", "الإداره", "الادارة", "الإدارة", "القسم", "department", "section", "management"],
     punchDateTime: ["التاريخوالوقت", "التاريخوالزمن", "datetime", "dateandtime", "punchtime", "timestamp"],
