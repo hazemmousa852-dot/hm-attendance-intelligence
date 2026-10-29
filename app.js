@@ -254,6 +254,23 @@
     return "unknown";
   }
 
+  function punchRoleForShift(punch, officialIn, officialOut) {
+    const explicitRole = movementKind(punch.movement);
+    if (explicitRole !== "unknown") return explicitRole;
+    const distanceFromIn = Math.abs(punch.dt - officialIn);
+    const distanceFromOut = Math.abs(punch.dt - officialOut);
+    return distanceFromIn <= distanceFromOut ? "in" : "out";
+  }
+
+  function selectShiftPunches(candidates, officialIn, officialOut) {
+    const inMoves = candidates.filter(p => punchRoleForShift(p, officialIn, officialOut) === "in");
+    const outMoves = candidates.filter(p => punchRoleForShift(p, officialIn, officialOut) === "out");
+    const actualInPunch = inMoves.length ? inMoves[0] : null;
+    const eligibleOut = outMoves.filter(p => !actualInPunch || p.dt > actualInPunch.dt);
+    const actualOutPunch = eligibleOut.length ? eligibleOut[eligibleOut.length - 1] : null;
+    return { actualInPunch, actualOutPunch };
+  }
+
   function normalizeLeaveType(value) {
     const raw = normalizeHeader(value);
     if (/بدوناجر|unpaid/.test(raw)) return "unpaid";
@@ -507,21 +524,9 @@
         candidates.forEach(p => used.add(p.id));
         if (candidates.length === 1) state.diagnostics.singles += 1;
         if (candidates.length > 2) state.diagnostics.multiples += 1;
-        const inMoves = candidates.filter(p => movementKind(p.movement) === "in");
-        const outMoves = candidates.filter(p => movementKind(p.movement) === "out");
-        const actualInPunch = candidates.length ? (inMoves[0] || candidates[0]) : null;
+        const { actualInPunch, actualOutPunch } = selectShiftPunches(candidates, officialIn, officialOut);
         const actualIn = actualInPunch ? actualInPunch.dt : null;
-        let actualOut = null;
-        let actualOutPunch = null;
-        if (candidates.length > 1) {
-          const eligibleOut = outMoves.filter(p => !actualIn || p.dt > actualIn);
-          actualOutPunch = eligibleOut.length ? eligibleOut[eligibleOut.length - 1] : candidates[candidates.length - 1];
-          actualOut = actualOutPunch.dt;
-          if (actualOut && actualIn && actualOut.getTime() === actualIn.getTime()) {
-            actualOut = null;
-            actualOutPunch = null;
-          }
-        }
+        const actualOut = actualOutPunch ? actualOutPunch.dt : null;
         const isRest = rests.has(date.getDay());
         const holiday = holidayByDate.get(dateKey(date)) || null;
         const leave = leaveByKey.get(`${employee.code}|${dateKey(date)}`) || null;
@@ -910,3 +915,4 @@
 
   initialize();
 })();
+
