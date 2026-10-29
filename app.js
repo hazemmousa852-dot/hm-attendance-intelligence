@@ -563,6 +563,12 @@
     toast(t("reportReady"));
   }
 
+  function calculateLateMinutes(actualIn, officialIn, graceMinutes, permissionMinutes) {
+    if (!actualIn || !officialIn) return 0;
+    const delayAfterPermission = Math.max(0, Math.round((actualIn - officialIn) / 60000) - permissionMinutes);
+    return delayAfterPermission > graceMinutes ? delayAfterPermission : 0;
+  }
+
   function recalculateRow(row) {
     const s = state.settings;
     row.dayType = row.holiday ? "holiday" : row.leave ? "leave" : row.isRest ? "rest" : "work";
@@ -571,7 +577,9 @@
     row.permissionEarlyMinutes = row.permissions.filter(item => item.type === "early").reduce((sum, item) => sum + item.minutes, 0);
     row.workMinutes = row.actualIn && row.actualOut ? Math.max(0, Math.round((row.actualOut - row.actualIn) / 60000)) : 0;
     row.isWorkedShiftDay = !!row.actualIn || !!row.actualOut;
-    row.lateMinutes = (row.dayType === "work" && row.actualIn) ? Math.max(0, Math.round((row.actualIn - row.officialIn) / 60000) - s.lateGrace - row.permissionArrivalMinutes) : 0;
+    row.lateMinutes = row.dayType === "work"
+      ? calculateLateMinutes(row.actualIn, row.officialIn, s.lateGrace, row.permissionArrivalMinutes)
+      : 0;
     row.earlyMinutes = (row.dayType === "work" && row.actualOut) ? Math.max(0, Math.round((row.officialOut - row.actualOut) / 60000) - s.earlyGrace - row.permissionEarlyMinutes) : 0;
     row.regularOvertimeMinutes = (row.dayType === "work" || row.dayType === "leave") && row.actualOut ? Math.max(0, Math.round((row.actualOut - row.officialOut) / 60000) - s.overtimeAfter) : 0;
     row.restOvertimeMinutes = row.dayType === "rest" && row.actualIn && row.actualOut ? (s.restOvertime === "all" ? row.workMinutes : Math.max(0, Math.round((row.actualOut - row.officialOut) / 60000) - s.overtimeAfter)) : 0;
