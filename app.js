@@ -765,39 +765,12 @@
   }
 
   function downloadTemplate() {
-    const wb = XLSX.utils.book_new();
-    const employeesSheet = XLSX.utils.aoa_to_sheet([
-      ["كود الموظف", "اسم الموظف", "الوظيفة", "القسم", "تاريخ التعيين", "الوردية", "بداية الوردية", "نهاية الوردية", "أيام الراحة"],
-      ["1001", "مثال موظف", "أخصائي", "الموارد البشرية", "01/01/2026", "صباحية", "08:00", "16:00", "الجمعة"]
-    ]);
-    employeesSheet["!cols"] = [{ wch: 14 }, { wch: 26 }, { wch: 20 }, { wch: 20 }, { wch: 18 }, { wch: 16 }, { wch: 18 }, { wch: 18 }, { wch: 22 }];
-    const shiftScheduleSheet = XLSX.utils.aoa_to_sheet([
-      ["كود الموظف", "من تاريخ", "إلى تاريخ", "اسم الوردية", "بداية الوردية", "نهاية الوردية", "أيام الراحة"],
-      ["1001", "01/01/2026", "15/01/2026", "صباحية", "08:00", "16:00", "الجمعة"],
-      ["1001", "16/01/2026", "31/01/2026", "ليلية", "20:00", "08:00", "الجمعة"]
-    ]);
-    shiftScheduleSheet["!cols"] = [{ wch: 14 }, { wch: 16 }, { wch: 16 }, { wch: 18 }, { wch: 18 }, { wch: 18 }, { wch: 22 }];
-    const leavesSheet = XLSX.utils.aoa_to_sheet([
-      ["كود الموظف", "نوع الإجازة", "تاريخ البداية", "تاريخ النهاية", "عدد الأيام", "ملاحظات"],
-      ["1001", "سنوى", "01/01/2026", "02/01/2026", 2, "الأنواع المتاحة: سنوى - بدون أجر - مرضى - أخرى"]
-    ]);
-    leavesSheet["!cols"] = [{ wch: 14 }, { wch: 18 }, { wch: 16 }, { wch: 16 }, { wch: 12 }, { wch: 42 }];
-    const permissionsSheet = XLSX.utils.aoa_to_sheet([
-      ["كود الموظف", "التاريخ", "نوع الإذن", "من الساعة", "إلى الساعة", "إجمالي الساعات", "ملاحظات"],
-      ["1001", "03/01/2026", "تأخير حضور", "08:00", "10:00", 2, "الأنواع المتاحة: تأخير حضور - خروج مبكر - أثناء اليوم"]
-    ]);
-    permissionsSheet["!cols"] = [{ wch: 14 }, { wch: 16 }, { wch: 20 }, { wch: 14 }, { wch: 14 }, { wch: 18 }, { wch: 46 }];
-    const holidaysSheet = XLSX.utils.aoa_to_sheet([
-      ["التاريخ", "اسم الإجازة الرسمية", "ملاحظات"],
-      ["07/01/2026", "إجازة رسمية", ""]
-    ]);
-    holidaysSheet["!cols"] = [{ wch: 16 }, { wch: 28 }, { wch: 38 }];
-    XLSX.utils.book_append_sheet(wb, employeesSheet, "Employees");
-    XLSX.utils.book_append_sheet(wb, shiftScheduleSheet, "Shift_Schedule");
-    XLSX.utils.book_append_sheet(wb, leavesSheet, "Leaves");
-    XLSX.utils.book_append_sheet(wb, permissionsSheet, "Permissions");
-    XLSX.utils.book_append_sheet(wb, holidaysSheet, "Official_Holidays");
-    XLSX.writeFile(wb, "HM_Attendance_Inputs_Template.xlsx");
+    const link = document.createElement("a");
+    link.href = "assets/HM_Attendance_Inputs_Template.xlsx";
+    link.download = "HM_Attendance_Inputs_Template.xlsx";
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
     toast(t("templateDone"));
   }
 
