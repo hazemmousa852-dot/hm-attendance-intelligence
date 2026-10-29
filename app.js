@@ -35,7 +35,7 @@
       totalEmployees: "الموظفون", attendanceDays: "أيام العمل الفعلية", absenceDays: "أيام الغياب",
       lateMinutes: "دقائق التأخير", overtimeMinutes: "دقائق الإضافي", missingDays: "أيام البصمة الناقصة",
       earlyMinutes: "دقائق الخروج المبكر", workHours: "ساعات العمل", rows: "سجل يومي",
-      code: "الكود", name: "الموظف", job: "الوظيفة", department: "القسم", date: "التاريخ", day: "اليوم",
+      code: "الكود", name: "الموظف", job: "الوظيفة", department: "القسم", hireDate: "تاريخ التعيين", date: "التاريخ", day: "اليوم",
       dayType: "نوع اليوم", shift: "الوردية", officialIn: "الدخول الرسمي", officialOut: "الخروج الرسمي",
       actualIn: "الدخول الفعلي", actualOut: "الخروج الفعلي", inMovement: "حركة الدخول", outMovement: "حركة الخروج", workMins: "دقائق العمل", earlyMins: "خروج مبكر",
       notes: "الملاحظات", actions: "", present: "يوم عمل", rest: "راحة أسبوعية", officialHoliday: "إجازة رسمية", leave: "إجازة", permission: "إذن",
@@ -84,7 +84,7 @@
       totalEmployees: "Employees", attendanceDays: "Worked shift days", absenceDays: "Absence days",
       lateMinutes: "Late minutes", overtimeMinutes: "Overtime minutes", missingDays: "Missing-punch days",
       earlyMinutes: "Early-leave minutes", workHours: "Work hours", rows: "daily records",
-      code: "Code", name: "Employee", job: "Job title", department: "Department", date: "Date", day: "Day",
+      code: "Code", name: "Employee", job: "Job title", department: "Department", hireDate: "Hire date", date: "Date", day: "Day",
       dayType: "Day type", shift: "Shift", officialIn: "Official in", officialOut: "Official out",
       actualIn: "Actual in", actualOut: "Actual out", inMovement: "In movement", outMovement: "Out movement", workMins: "Work minutes", earlyMins: "Early leave",
       notes: "Notes", actions: "", present: "Work Day", rest: "Weekly Rest", officialHoliday: "Official Holiday", leave: "Leave", permission: "Permission",
@@ -113,6 +113,7 @@
     employeeName: ["اسمالموظف", "الاسم", "الإسم", "employeename", "name"],
     employeeJob: ["الوظيفه", "الوظيفة", "المسمىالوظيفي", "jobtitle", "job"],
     employeeDept: ["القسم", "الاداره", "الإدارة", "department", "section"],
+    employeeHireDate: ["تاريخالتعيين", "تاريخالتوظيف", "تاريخالالتحاق", "hiredate", "dateofhire", "employmentdate", "joiningdate"],
     employeeShift: ["الورديه", "الوردية", "اسمالورديه", "shift", "shiftname"],
     employeeStart: ["بدايهالورديه", "بدايةالوردية", "وقتالدخول", "shiftstart", "starttime"],
     employeeEnd: ["نهايهالورديه", "نهايةالوردية", "وقتالخروج", "shiftend", "endtime"],
@@ -243,6 +244,7 @@
   }
 
   function startOfDay(date) { return new Date(date.getFullYear(), date.getMonth(), date.getDate()); }
+  function employeeStartedByDate(employee, date) { return !employee.hireDate || startOfDay(date) >= employee.hireDate; }
   function addMinutes(date, minutes) { return new Date(date.getTime() + minutes * 60000); }
   function formatTime(date) { return date ? `${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}` : ""; }
   function formatMinutes(value) { return `${Math.floor(value / 60)}:${String(Math.round(value % 60)).padStart(2, "0")}`; }
@@ -382,16 +384,20 @@
     try {
       const sheets = await readWorkbookSheets(file);
       const rows = sheetRows(sheets, ["Employees", "الموظفين", "الموظفون"], true);
-      const employees = rows.map(row => ({
-        code: String(findField(row, HEADER_ALIASES.employeeCode) ?? "").trim(),
-        name: String(findField(row, HEADER_ALIASES.employeeName) ?? "").trim(),
-        job: String(findField(row, HEADER_ALIASES.employeeJob) ?? "").trim(),
-        department: String(findField(row, HEADER_ALIASES.employeeDept) ?? "").trim(),
-        shift: String(findField(row, HEADER_ALIASES.employeeShift) ?? "").trim(),
-        start: parseTime(findField(row, HEADER_ALIASES.employeeStart)),
-        end: parseTime(findField(row, HEADER_ALIASES.employeeEnd)),
-        restRaw: String(findField(row, HEADER_ALIASES.employeeRest) ?? "").trim()
-      })).filter(row => row.code);
+      const employees = rows.map(row => {
+        const hireDate = excelDate(findField(row, HEADER_ALIASES.employeeHireDate));
+        return {
+          code: String(findField(row, HEADER_ALIASES.employeeCode) ?? "").trim(),
+          name: String(findField(row, HEADER_ALIASES.employeeName) ?? "").trim(),
+          job: String(findField(row, HEADER_ALIASES.employeeJob) ?? "").trim(),
+          department: String(findField(row, HEADER_ALIASES.employeeDept) ?? "").trim(),
+          hireDate: hireDate ? startOfDay(hireDate) : null,
+          shift: String(findField(row, HEADER_ALIASES.employeeShift) ?? "").trim(),
+          start: parseTime(findField(row, HEADER_ALIASES.employeeStart)),
+          end: parseTime(findField(row, HEADER_ALIASES.employeeEnd)),
+          restRaw: String(findField(row, HEADER_ALIASES.employeeRest) ?? "").trim()
+        };
+      }).filter(row => row.code);
       if (!employees.length || employees.some(e => e.start === null || e.end === null)) throw new Error(t("invalidEmployeesFile"));
       state.employees = Array.from(new Map(employees.map(e => [e.code, e])).values());
 
@@ -513,6 +519,7 @@
       const used = new Set();
       for (let cursor = new Date(settings.start); cursor <= settings.end; cursor.setDate(cursor.getDate() + 1)) {
         const date = new Date(cursor);
+        if (!employeeStartedByDate(employee, date)) continue;
         const effectiveShift = effectiveShiftForDate(employee, date);
         const rests = restDaySet(effectiveShift.restRaw);
         const officialIn = addMinutes(startOfDay(date), effectiveShift.start);
@@ -760,10 +767,10 @@
   function downloadTemplate() {
     const wb = XLSX.utils.book_new();
     const employeesSheet = XLSX.utils.aoa_to_sheet([
-      ["كود الموظف", "اسم الموظف", "الوظيفة", "القسم", "الوردية", "بداية الوردية", "نهاية الوردية", "أيام الراحة"],
-      ["1001", "مثال موظف", "أخصائي", "الموارد البشرية", "صباحية", "08:00", "16:00", "الجمعة"]
+      ["كود الموظف", "اسم الموظف", "الوظيفة", "القسم", "تاريخ التعيين", "الوردية", "بداية الوردية", "نهاية الوردية", "أيام الراحة"],
+      ["1001", "مثال موظف", "أخصائي", "الموارد البشرية", "01/01/2026", "صباحية", "08:00", "16:00", "الجمعة"]
     ]);
-    employeesSheet["!cols"] = [{ wch: 14 }, { wch: 26 }, { wch: 20 }, { wch: 20 }, { wch: 16 }, { wch: 18 }, { wch: 18 }, { wch: 22 }];
+    employeesSheet["!cols"] = [{ wch: 14 }, { wch: 26 }, { wch: 20 }, { wch: 20 }, { wch: 18 }, { wch: 16 }, { wch: 18 }, { wch: 18 }, { wch: 22 }];
     const shiftScheduleSheet = XLSX.utils.aoa_to_sheet([
       ["كود الموظف", "من تاريخ", "إلى تاريخ", "اسم الوردية", "بداية الوردية", "نهاية الوردية", "أيام الراحة"],
       ["1001", "01/01/2026", "15/01/2026", "صباحية", "08:00", "16:00", "الجمعة"],
@@ -835,7 +842,8 @@
     })), "Raw_Movements", 22);
     appendJsonSheet(wb, state.employees.map(e => ({
       [t("code")]: e.code, [t("name")]: e.name, [t("job")]: e.job, [t("department")]: e.department,
-      [t("shift")]: e.shift, [t("officialIn")]: minutesText(e.start), [t("officialOut")]: minutesText(e.end), [t("rest")]: e.restRaw
+      [t("hireDate")]: e.hireDate ? dateKey(e.hireDate) : "", [t("shift")]: e.shift,
+      [t("officialIn")]: minutesText(e.start), [t("officialOut")]: minutesText(e.end), [t("rest")]: e.restRaw
     })), "Employees", 20);
     appendJsonSheet(wb, state.shiftSchedules.map(item => ({
       [t("code")]: item.code,
